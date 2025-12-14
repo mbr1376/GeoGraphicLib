@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(GeographicLib REQUIRED)
 
-add_library(GeoWrapper STATIC src/GeoWrapper.cpp)
+add_library(GeoWrapper SHARED  src/GeoWrapper.cpp)
 # for ubuntu
 #target_link_libraries(GeoWrapper PUBLIC Geographic)
 # For linking use the imported target provided by the package (if available) so includes and
@@ -23,5 +23,8 @@ target_include_directories(GeoWrapper PUBLIC
 target_link_libraries(GeoWrapper PUBLIC ${GeographicLib_LIBRARIES})
 
 
+if(COPY_SHARED_LIBS)
+    register_shared_lib_for_copy(GeoWrapper)
+endif()
 add_executable(examplewrapper example/main.cpp)
 target_link_libraries(examplewrapper GeoWrapper)

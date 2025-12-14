@@ -6,9 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
 
-add_library(WFSLib STATIC
+add_library(WFSLib SHARED
     src/WFSClient.cpp
 )
+if(COPY_SHARED_LIBS)
+    # If this target is a shared library, register it for automatic copying to the build/lib dir
+    register_shared_lib_for_copy(WFSLib)
+endif()
 
 find_package(CURL REQUIRED)
 
