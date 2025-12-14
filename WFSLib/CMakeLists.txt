@@ -11,22 +11,25 @@ add_library(WFSLib STATIC
 )
 
 find_package(CURL REQUIRED)
-#sudo  apt install libtinyxml2-dev
-#find_path(TINYXML2_INCLUDE_DIR tinyxml2.h)
-find_library(TINYXML2_LIBRARY tinyxml2)
 
-# if(NOT TINYXML2_INCLUDE_DIR OR NOT TINYXML2_LIBRARY)
-#     message(FATAL_ERROR "TinyXML2 library not found. Please install libtinyxml2-dev.")
-# endif()
+# Prefer find_package for TinyXML2; on Debian/Ubuntu the package is libtinyxml2-dev and
+# on Fedora/RHEL it's tinyxml2-devel. This ensures we get an imported target and
+# include directories properly.
+# sudo dnf install tinyxml2-devel
+# sudo apt install tinyxml2-dev
+find_package(TinyXML2 REQUIRED)
 
-include_directories(${TINYXML2_INCLUDE_DIR})
-
-target_link_libraries(WFSLib
-    PRIVATE CURL::libcurl
+target_link_libraries(WFSLib   PRIVATE CURL::libcurl
+    #ubuntu
     #PRIVATE TinyXML2::TinyXML2
-    PRIVATE ${TINYXML2_LIBRARY}
+    # fedora
+    PRIVATE tinyxml2::tinyxml2
+)
+
+target_include_directories(WFSLib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # اختیاری: نمونه تست
-add_executable(example example/main.cpp)
-target_link_libraries(example WFSLib)
+add_executable(wfs_example example/main.cpp)
+target_link_libraries(wfs_example WFSLib)
