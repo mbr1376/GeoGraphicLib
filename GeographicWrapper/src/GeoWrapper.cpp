@@ -9,6 +9,7 @@
 #include <GeographicLib/Rhumb.hpp>
 #include <GeographicLib/Geodesic.hpp>
 #include <GeographicLib/GeodesicLine.hpp>
+#include <GeographicLib/Georef.hpp>
 #include <iostream>
 
 using namespace GeographicLib;
@@ -37,7 +38,14 @@ double GeoWrapper::polygonArea(const std::vector<double>& lats, const std::vecto
     poly.Compute(false, true, perimeter, area);
     return area; // متر مربع
 }
-
+std::string GeoWrapper::latLonToGEOREF(double lat,double lon ,  int prec){
+    std::string georef;
+    Georef::Forward(lat, lon, prec, georef);
+    return georef;
+}
+void GeoWrapper::decodeGEOREF(std::string georef,double& lat,double& lon,  int& prec){
+     Georef::Reverse(georef, lat, lon, prec);
+}
 void GeoWrapper::LatLonToUTM(double lat, double lon, int& zone, bool& northp,
                             double& easting, double& northing) {
     GeographicLib::UTMUPS::Forward(lat, lon, zone, northp, easting, northing);

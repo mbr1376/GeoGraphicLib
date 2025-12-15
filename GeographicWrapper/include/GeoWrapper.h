@@ -37,7 +37,8 @@ public:
 
     // مساحت چندضلعی روی زمین
     static double polygonArea(const std::vector<double>& lats, const std::vector<double>& lons);
-
+    static std::string latLonToGEOREF (double lon, double  lat,  int prec);
+    static void decodeGEOREF(std::string georef,double& lat,double& lon,  int& prec);
     // UTM/UPS conversions
     static void LatLonToUTM(double lat, double lon, int& zone, bool& northp,
                             double& easting, double& northing);
@@ -82,3 +83,4 @@ private:
     Tool tool = Tool::WGS84;
 
 };
+
