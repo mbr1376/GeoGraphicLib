@@ -28,58 +28,83 @@ public:
     // Mode
     void setTool(Tool t) { tool = t; }
     Tool getTool() const { return tool; }
-    // فاصله بین دو نقطه (lat1, lon1) و (lat2, lon2)
+    // ================== GEODESIC CORE ==================
     static double Distance(double lat1, double lon1, double lat2, double lon2);
 
-    // زاویه اولیه و نهایی مسیر بین دو نقطه
-    static void Azimuth(double lat1, double lon1, double lat2, double lon2,
-                        double& azi1, double& azi2);
+    static void Inverse(double lat1, double lon1,
+                        double lat2, double lon2,
+                        double& s12, double& azi1, double& azi2);
 
-    // مساحت چندضلعی روی زمین
-    static double polygonArea(const std::vector<double>& lats, const std::vector<double>& lons);
-    static std::string latLonToGEOREF (double lon, double  lat,  int prec);
-    static void decodeGEOREF(std::string georef,double& lat,double& lon,  int& prec);
-    // UTM/UPS conversions
-    static void LatLonToUTM(double lat, double lon, int& zone, bool& northp,
-                            double& easting, double& northing);
-    static void UTMToLatLon(int zone, bool northp, double easting, double northing,
+    static void Direct(double lat1, double lon1, double azi1, double s12,
+                       double& lat2, double& lon2, double& azi2);
+
+    static void MidPoint(double lat1, double lon1,
+                         double lat2, double lon2,
+                         double& latm, double& lonm);
+
+    // ================== POLYGON / GIS ==================
+    static double PolygonArea(const std::vector<double>& lats,
+                              const std::vector<double>& lons);
+
+    static double PolygonPerimeter(const std::vector<double>& lats,
+                                   const std::vector<double>& lons);
+
+    static bool PointInPolygon(double lat, double lon,
+                               const std::vector<double>& lats,
+                               const std::vector<double>& lons);
+
+    // ================== COORD SYSTEMS ==================
+    static void LatLonToUTM(double lat, double lon,
+                            int& zone, bool& northp,
+                            double& e, double& n);
+
+    static void UTMToLatLon(int zone, bool northp,
+                            double e, double n,
                             double& lat, double& lon);
 
-    // MGRS conversions
-    static std::string LatLonToMGRS(double lat, double lon, int precision = 5);
+    static std::string LatLonToMGRS(double lat, double lon, int prec = 5);
     static bool MGRSToLatLon(const std::string& mgrs, double& lat, double& lon);
 
-    // Geodesic direct
-    static void GeodDirect(double lat1, double lon1, double azi1, double s12,
-                           double& lat2, double& lon2, double& azi2);
+    static std::string LatLonToGEOREF(double lat, double lon, int prec);
+    static void GEOREFToLatLon(const std::string& georef,
+                               double& lat, double& lon, int& prec);
 
-    // Transverse Mercator (forward/inverse) using the simple interface
-    static void TMForward(double lat, double lon, double lon0, double& x, double& y);
-    static void TMInverse(double x, double y, double lon0, double& lat, double& lon);
+    // ================== GEOCENTRIC / LOCAL ==================
+    static void GeodeticToECEF(double lat, double lon, double h,
+                               double& X, double& Y, double& Z);
 
-    // Geocentric/local conversions
-    static void GeodeticToGeocentric(double lat, double lon, double h,
-                                     double& X, double& Y, double& Z);
-    static void GeocentricToGeodetic(double X, double Y, double Z,
-                                     double& lat, double& lon, double& h);
+    static void ECEFToGeodetic(double X, double Y, double Z,
+                               double& lat, double& lon, double& h);
 
-    // Local cartesian (local origin)
-    static void GeodeticToLocalCartesian(double lat0, double lon0, double h0,
-                                         double lat, double lon, double h,
-                                         double& x, double& y, double& z);
-    static void LocalCartesianToGeodetic(double lat0, double lon0, double h0,
-                                         double x, double y, double z,
-                                         double& lat, double& lon, double& h);
+    static void GeodeticToENU(double lat0, double lon0, double h0,
+                              double lat, double lon, double h,
+                              double& e, double& n, double& u);
 
-    // Rhumb line (loxodrome) helpers
-    static void RhumbInverse(double lat1, double lon1, double lat2, double lon2,
+    static void ENUToGeodetic(double lat0, double lon0, double h0,
+                              double e, double n, double u,
+                              double& lat, double& lon, double& h);
+
+    // ================== NAVIGATION ==================
+    static void RhumbInverse(double lat1, double lon1,
+                             double lat2, double lon2,
                              double& s12, double& azi1, double& azi2);
 
-    // Intersection of two geodesics (simple wrapper)
+    static void CrossTrack(double lat, double lon,
+                           double lat1, double lon1,
+                           double lat2, double lon2,
+                           double& xtrack, double& along);
+
     static bool IntersectGeodesics(double lat1, double lon1, double azi1,
                                    double lat2, double lon2, double azi2,
                                    double& lat, double& lon);
-private:
+
+    // ================== UTILS ==================
+    static double DegToRad(double d);
+    static double RadToDeg(double r);
+    static double NormalizeLon(double lon);
+    static double NormalizeAzimuth(double azi);
+
+    private:
     Tool tool = Tool::WGS84;
 
 };
