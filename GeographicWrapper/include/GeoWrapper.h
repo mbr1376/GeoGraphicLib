@@ -12,7 +12,7 @@
 class GeoWrapper {
 public:
     explicit GeoWrapper();
-    ~GeoWrapper();
+    ~GeoWrapper()= default;
     enum class Tool {
         WGS84,
         UTMUPS,

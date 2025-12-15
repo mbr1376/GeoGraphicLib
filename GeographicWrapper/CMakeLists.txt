@@ -9,8 +9,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # On Fedora/RHEL the package is geographiclib-devel.
 
 find_package(GeographicLib REQUIRED)
+find_package(pybind11  REQUIRED)
+find_package(Python3 COMPONENTS Development REQUIRED)
 
-add_library(GeoWrapper SHARED  src/GeoWrapper.cpp)
+pybind11_add_module(pygeowrapper
+    src/GeoWrapper.cpp
+    src/pygeowrapper.cpp
+    include/GeoWrapper.h
+)
+target_include_directories(pygeowrapper
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE GeographicLib::GeographicLib
+)
+add_library(GeoWrapper SHARED  src/GeoWrapper.cpp )
 # for ubuntu
 #target_link_libraries(GeoWrapper PUBLIC Geographic)
 # For linking use the imported target provided by the package (if available) so includes and
@@ -20,11 +32,12 @@ target_include_directories(GeoWrapper PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${GeographicLib_INCLUDE_DIRS}
 )
-target_link_libraries(GeoWrapper PUBLIC ${GeographicLib_LIBRARIES})
+target_link_libraries(GeoWrapper PUBLIC ${GeographicLib_LIBRARIES}  Python3::Python)
 
 
 if(COPY_SHARED_LIBS)
     register_shared_lib_for_copy(GeoWrapper)
+    register_shared_lib_for_copy(pygeowrapper)
 endif()
 add_executable(examplewrapper example/main.cpp)
 target_link_libraries(examplewrapper GeoWrapper)

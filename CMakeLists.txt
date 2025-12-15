@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 option(COPY_SHARED_LIBS "Copy built shared libraries (*.so) to ${CMAKE_BINARY_DIR}/lib after build" ON)
+option(CREATE_LIB_PYTHON "Create lib for  python" ON)
 
 if(COPY_SHARED_LIBS)
 	set(SHARED_LIB_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
