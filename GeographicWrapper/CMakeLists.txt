@@ -15,6 +15,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(GeoWrapper SHARED  src/GeoWrapper.cpp )
 # for ubuntu
 target_link_libraries(GeoWrapper PUBLIC GeographicLib)
+# for fedora
+#target_link_libraries(GeoWrapper PUBLIC Geographic)
 
 
 # For linking use the imported target provided by the package (if available) so includes and
