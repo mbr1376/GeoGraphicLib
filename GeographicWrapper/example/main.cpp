@@ -14,13 +14,12 @@ int main() {
     double lat2 = 35.7000, lon2 = 51.4000;
     double d = GeoWrapper::Distance(lat, lon, lat2, lon2);
     double azi1, azi2;
-    GeoWrapper::Azimuth(lat, lon, lat2, lon2, azi1, azi2);
     std::cout << "Distance: " << d << " m, Azimuth: " << azi1 << " deg\n";
 
     // polygon area demo (approx small square)
     std::vector<double> lats = {35.6892, 35.6892, 35.7000, 35.7000};
     std::vector<double> lons = {51.3890, 51.4000, 51.4000, 51.3890};
-    double area = GeoWrapper::polygonArea(lats, lons);
+    double area = GeoWrapper::PolygonArea(lats, lons);
     std::cout << "Polygon area: " << area << " m^2\n";
 
     return 0;

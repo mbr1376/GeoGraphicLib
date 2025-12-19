@@ -8,7 +8,7 @@
 #include <GeographicLib/LocalCartesian.hpp>
 #include <GeographicLib/Rhumb.hpp>
 #include <GeographicLib/Math.hpp>
-
+#include <GeographicLib/GeodesicLine.hpp>
 using namespace GeographicLib;
 
 static const Geodesic& geod = Geodesic::WGS84();
@@ -33,7 +33,7 @@ void GeoWrapper::Direct(double lat1, double lon1, double azi1, double s12,
 
 void GeoWrapper::MidPoint(double lat1, double lon1,
                           double lat2, double lon2,
-                          double& latm, double& lonm) {
+                          double& latm, double& lonm){
     double s12, azi1, azi2;
     geod.Inverse(lat1, lon1, lat2, lon2, s12, azi1, azi2);
     auto line = geod.Line(lat1, lon1, azi1);
@@ -44,7 +44,7 @@ void GeoWrapper::MidPoint(double lat1, double lon1,
 // ================= POLYGON =================
 double GeoWrapper::PolygonArea(const std::vector<double>& lats,
                                const std::vector<double>& lons) {
-    PolygonArea p(geod, false);
+    GeographicLib::PolygonArea p(geod,false);
     for (size_t i = 0; i < lats.size(); ++i)
         p.AddPoint(lats[i], lons[i]);
     double per, area;
@@ -54,7 +54,7 @@ double GeoWrapper::PolygonArea(const std::vector<double>& lats,
 
 double GeoWrapper::PolygonPerimeter(const std::vector<double>& lats,
                                     const std::vector<double>& lons) {
-    PolygonArea p(geod, false);
+    GeographicLib::PolygonArea p(geod, false);
     for (size_t i = 0; i < lats.size(); ++i)
         p.AddPoint(lats[i], lons[i]);
     double per, area;
@@ -65,7 +65,7 @@ double GeoWrapper::PolygonPerimeter(const std::vector<double>& lats,
 bool GeoWrapper::PointInPolygon(double lat, double lon,
                                 const std::vector<double>& lats,
                                 const std::vector<double>& lons) {
-    PolygonArea p(geod, false);
+    GeographicLib::PolygonArea p(geod, false);
     for (size_t i = 0; i < lats.size(); ++i)
         p.AddPoint(lats[i], lons[i]);
     p.AddPoint(lat, lon);

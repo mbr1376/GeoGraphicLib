@@ -13,6 +13,25 @@ static size_t writeCallback(void* contents, size_t size, size_t nmemb, void* use
 }
 
 bool SLDClient::downloadSLD(const std::string& url,
+                            const std::string& outputFile)
+{
+    CURL* curl = curl_easy_init();
+    if (!curl) return false;
+
+    std::ofstream file(outputFile, std::ios::binary);
+    if (!file.is_open()) return false;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+
+    return res == CURLE_OK;
+}
+bool SLDClient::downloadSLD(const std::string& url,
                                      const std::string& user,
                                      const std::string& password,
                                      const std::string& outputFile)
@@ -68,12 +87,10 @@ bool SLDClient::parseSLD(const std::string& sldFile)
 
     return true;
 }
-std::string SLDClient::getStrokeColor() const
-{
-    return strokeColor_;
-}
-
-double SLDClient::getStrokeWidth() const
-{
-    return strokeWidth_;
+std::string SLDClient::getLayerName() const { return layerName_; }
+const std::vector<SLDColor>& SLDClient::getColors() const { return colors_; }
+std::string SLDClient::getStrokeColor() const { return strokeColor_; }
+double SLDClient::getStrokeWidth() const { return strokeWidth_; }
+const std::vector<std::string>& SLDClient::getPropertyNames() const {
+    return propertyNames_;
 }

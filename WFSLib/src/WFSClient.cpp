@@ -1,170 +1,102 @@
-#include "SLDClient.h"
-#include <curl/curl.h>
-#include <fstream>
+#include "WFSClient.h"
 #include <iostream>
-#include "tinyxml2.h"
+#include <curl/curl.h>
+#include <tinyxml2.h>
 
 using namespace tinyxml2;
 
-// ---------------- write callback ----------------
-static size_t writeCallback(void* contents, size_t size, size_t nmemb, void* userp)
-{
-    std::ofstream* file = static_cast<std::ofstream*>(userp);
-    file->write(static_cast<char*>(contents), size * nmemb);
-    return size * nmemb;
+static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output) {
+    size_t totalSize = size * nmemb;
+    output->append((char*)contents, totalSize);
+    return totalSize;
 }
 
-// ---------------- download without auth ----------------
-bool SLDClient::downloadSLD(const std::string& url,
-                            const std::string& outputFile)
-{
+WFSClient::WFSClient(const std::string& baseUrl, const std::string& user, const std::string& password)
+    : baseUrl(baseUrl), user(user), password(password) {}
+
+std::string WFSClient::httpGet(const std::string& url) {
     CURL* curl = curl_easy_init();
-    if (!curl) return false;
+    std::string response;
 
-    std::ofstream file(outputFile, std::ios::binary);
-    if (!file.is_open()) return false;
-
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-    CURLcode res = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-
-    return res == CURLE_OK;
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        if (!user.empty())
+            curl_easy_setopt(curl, CURLOPT_USERPWD, (user + ":" + password).c_str());
+        curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+    }
+    return response;
 }
 
-// ---------------- download with auth ----------------
-bool SLDClient::downloadSLD(const std::string& url,
-                            const std::string& user,
-                            const std::string& password,
-                            const std::string& outputFile)
-{
-    CURL* curl = curl_easy_init();
-    if (!curl) return false;
+std::vector<WFSLayer> WFSClient::getLayers() {
+    std::string url = baseUrl + "?service=WFS&acceptversions=2.0.0&request=GetCapabilities";
+    std::string xml = httpGet(url);
+    std::vector<WFSLayer> layers;
 
-    std::ofstream file(outputFile, std::ios::binary);
-    if (!file.is_open()) return false;
-
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERNAME, user.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-    CURLcode res = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-
-    return res == CURLE_OK;
-}
-
-// ---------------- parse SLD ----------------
-bool SLDClient::parseSLD(const std::string& sldFile)
-{
-    colors_.clear();
-
-    tinyxml2::XMLDocument doc;
-    if (doc.LoadFile(sldFile.c_str()) != XML_SUCCESS)
-        return false;
-
-    tinyxml2::XMLElement* root = doc.RootElement();
-    if (!root) return false;
-
-    // extract layer name
-    tinyxml2::XMLElement* namedLayer = root->FirstChildElement("NamedLayer");
-    if (namedLayer) {
-        tinyxml2::XMLElement* nameEl = namedLayer->FirstChildElement("Name");
-        if (nameEl && nameEl->GetText())
-            layerName_ = nameEl->GetText();
+    XMLDocument doc;
+    if (doc.Parse(xml.c_str()) != XML_SUCCESS) {
+        std::cerr << "Error parsing WFS capabilities XML\n";
+        return layers;
     }
 
-    // extract CSS parameters recursively
-    extractCssParameters(root, "");
+    XMLElement* root = doc.RootElement();
+    XMLElement* featureTypeList = root->FirstChildElement("wfs:FeatureTypeList");
+    if (!featureTypeList)
+        featureTypeList = root->FirstChildElement("FeatureTypeList");
 
-    return true;
-}
+    if (!featureTypeList) return layers;
 
-void SLDClient::downloadIcon(const std::string &url, const std::string &outputFile)
-{
-    CURL* curl = curl_easy_init();
-    if (!curl) return;
+    for (XMLElement* ft = featureTypeList->FirstChildElement();
+         ft != nullptr;
+         ft = ft->NextSiblingElement()) {
+        const char* name = nullptr;
+        const char* title = nullptr;
 
-    std::ofstream file(outputFile, std::ios::binary);
-    if (!file.is_open()) return;
+        XMLElement* n = ft->FirstChildElement("wfs:Name");
+        if (!n) n = ft->FirstChildElement("Name");
+        XMLElement* t = ft->FirstChildElement("wfs:Title");
+        if (!t) t = ft->FirstChildElement("Title");
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        if (n) name = n->GetText();
+        if (t) title = t->GetText();
 
-    CURLcode res = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-
-    if (res == CURLE_OK) {
-        std::cout << "✅ Icon downloaded to: " << outputFile << "\n";
-    } else {
-        std::cout << "❌ Failed to download icon from: " << url << "\n";
+        if (name)
+            layers.push_back({name, title ? title : ""});
     }
+
+    return layers;
 }
 
-// ---------------- recursive extraction ----------------
-void SLDClient::extractCssParameters(tinyxml2::XMLElement* element,
-                                     const std::string& prefix)
+std::string WFSClient::getLayerAsJSON(const std::string &layerTitle)
 {
-    if (!element) return;
+    auto layers = getLayers();
+    std::string typenameValue;
 
-    std::string elName = element->Name();
-
-    // ✅ استخراج CssParameter
-    if (elName == "CssParameter") {
-        const char* name = element->Attribute("name");
-        const char* value = element->GetText();
-
-        if (name && value) {
-            std::string type = prefix + name;
-            colors_.push_back({type, value});
-
-            if (std::string(name) == "stroke")
-                strokeColor_ = value;
-            else if (std::string(name) == "stroke-width")
-                strokeWidth_ = std::stod(value);
+    for (const auto& layer : layers) {
+        if (layer.title == layerTitle) {
+            typenameValue = layer.name;
+            break;
         }
     }
 
-    // ✅ استخراج PropertyName
-    if (elName == "ogc:PropertyName" || elName == "PropertyName") {
-        const char* value = element->GetText();
-        if (value)
-            propertyNames_.push_back(value);
+    if (typenameValue.empty()) {
+        std::cerr << "❌ Layer with title '" << layerTitle << "' not found.\n";
+        return "{}";
     }
 
-    // ✅ استخراج ExternalGraphic و دانلود آیکن
-    if (elName == "ExternalGraphic") {
-        const char* url = element->FirstChildElement("OnlineResource")
-        ->Attribute("xlink:href");
-        if (url) {
-            std::cout << "🔗 Icon found: " << url << "\n";
-            std::string iconFileName = "icon_" + std::string(url).substr(std::string(url).find_last_of("/") + 1);
-            downloadIcon(url, iconFileName);
-        }
+    std::string url = baseUrl +
+                      "?service=WFS&version=2.0.0&request=GetFeature&typename=" +
+                      typenameValue + "&outputFormat=application/json";
+
+    std::cout << "🔗 Requesting GeoJSON from: " << url << std::endl;
+
+    std::string json = httpGet(url);
+    if (json.empty()) {
+        std::cerr << "❌ No data returned from GeoServer.\n";
+        return "{}";
     }
 
-    // recurse into children
-    for (tinyxml2::XMLElement* child = element->FirstChildElement();
-         child; child = child->NextSiblingElement())
-    {
-        extractCssParameters(child, prefix);
-    }
-
-}
-
-// ---------------- getters ----------------
-std::string SLDClient::getLayerName() const { return layerName_; }
-const std::vector<SLDColor>& SLDClient::getColors() const { return colors_; }
-std::string SLDClient::getStrokeColor() const { return strokeColor_; }
-double SLDClient::getStrokeWidth() const { return strokeWidth_; }
-const std::vector<std::string>& SLDClient::getPropertyNames() const {
-    return propertyNames_;
+    return json;
 }

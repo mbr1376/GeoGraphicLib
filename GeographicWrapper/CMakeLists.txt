@@ -8,23 +8,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Try to find GeographicLib (dependency). On Debian/Ubuntu the package is libgeographic-dev
 # On Fedora/RHEL the package is geographiclib-devel.
 
-find_package(GeographicLib REQUIRED)
-find_package(pybind11  REQUIRED)
-find_package(Python3 COMPONENTS Development REQUIRED)
 
-pybind11_add_module(pygeowrapper
-    src/GeoWrapper.cpp
-    src/pygeowrapper.cpp
-    include/GeoWrapper.h
-)
-target_include_directories(pygeowrapper
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PRIVATE GeographicLib::GeographicLib
-)
+#### for fedora/redhat
+#find_package(GeographicLib REQUIRED)
+
 add_library(GeoWrapper SHARED  src/GeoWrapper.cpp )
 # for ubuntu
-#target_link_libraries(GeoWrapper PUBLIC Geographic)
+target_link_libraries(GeoWrapper PUBLIC GeographicLib)
+
+
 # For linking use the imported target provided by the package (if available) so includes and
 # link flags are handled correctly. If not provided, CMake may fallback to library names.
 target_include_directories(GeoWrapper PUBLIC
@@ -32,12 +24,11 @@ target_include_directories(GeoWrapper PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${GeographicLib_INCLUDE_DIRS}
 )
-target_link_libraries(GeoWrapper PUBLIC ${GeographicLib_LIBRARIES}  Python3::Python)
+target_link_libraries(GeoWrapper PUBLIC ${GeographicLib_LIBRARIES} )
 
 
 if(COPY_SHARED_LIBS)
     register_shared_lib_for_copy(GeoWrapper)
-    register_shared_lib_for_copy(pygeowrapper)
 endif()
 add_executable(examplewrapper example/main.cpp)
 target_link_libraries(examplewrapper GeoWrapper)

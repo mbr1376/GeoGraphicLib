@@ -8,19 +8,23 @@ include_directories(include)
 
 add_library(WFSLib SHARED
     src/WFSClient.cpp
+    src/SLDClient.cpp
 )
 if(COPY_SHARED_LIBS)
     # If this target is a shared library, register it for automatic copying to the build/lib dir
     register_shared_lib_for_copy(WFSLib)
 endif()
 
-find_package(CURL REQUIRED)
+
 
 # Prefer find_package for TinyXML2; on Debian/Ubuntu the package is libtinyxml2-dev and
 # on Fedora/RHEL it's tinyxml2-devel. This ensures we get an imported target and
 # include directories properly.
 # sudo dnf install tinyxml2-devel
-# sudo apt install tinyxml2-dev
+# sudo apt install libtinyxml2-dev
+
+# For ubuntu
+find_package(CURL REQUIRED)
 find_package(TinyXML2 REQUIRED)
 
 target_link_libraries(WFSLib   PRIVATE CURL::libcurl

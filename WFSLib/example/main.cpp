@@ -1,6 +1,6 @@
 #include "WFSClient.h"
 #include <iostream>
-
+#include <SLDClient.h>
 void testWFSClient(){
     WFSClient client("http://localhost:8080/geoserver/ows");
 
@@ -33,7 +33,7 @@ void testSLD(){
     std::cout << "⬇ Downloading SLD...\n";
     if (!client.parseSLD(file)) {
         std::cout << "❌ Failed to parse SLD\n";
-        return 1;
+
     }
 
     std::cout << "Layer name: " << client.getLayerName() << "\n";
@@ -49,9 +49,10 @@ void testSLD(){
     for (auto& p : client.getPropertyNames())
         std::cout << " - " << p << "\n";
 
-    return 0;
+
 }
 int main() {
     testWFSClient();
     testSLD();
+    return 0;
 }
