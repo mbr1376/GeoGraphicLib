@@ -12,7 +12,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #### for fedora/redhat
 #find_package(GeographicLib REQUIRED)
 
-add_library(GeoWrapper SHARED  src/GeoWrapper.cpp )
+add_library(GeoWrapper SHARED  
+            src/GeoWrapper.cpp 
+            src/api/geo.cpp
+            src/geodesy/geodesicengine.cpp
+            src/datum/ellipsoid.cpp
+            src/datum/datum.cpp
+            src/projection/transversemercator.cpp
+            src/projection/utmprojection.cpp
+            src/projection/projectionfacade.cpp
+            )
 # for ubuntu
 target_link_libraries(GeoWrapper PUBLIC GeographicLib)
 # for fedora
