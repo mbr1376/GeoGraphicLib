@@ -10,6 +10,7 @@ public:
     double a() const;
     double f() const;
     const std::string& name() const;
+    static Ellipsoid International1924();
 
     // Common ellipsoids
     static Ellipsoid WGS84();

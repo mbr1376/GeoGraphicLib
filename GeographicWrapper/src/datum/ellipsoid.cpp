@@ -16,5 +16,9 @@ Ellipsoid Ellipsoid::WGS84() {
 Ellipsoid Ellipsoid::GRS80() {
     return Ellipsoid(6378137.0, 1.0 / 298.257222101, "GRS80");
 }
+Ellipsoid Ellipsoid::International1924() {
+    // a = 6378388 m, 1/f = 297
+    return Ellipsoid(6378388.0, 1.0 / 297.0);
+}
 
 } // namespace libprojection

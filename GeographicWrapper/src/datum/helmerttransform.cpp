@@ -1,4 +1,4 @@
-#include "libprojection/datum/HelmertTransform.h"
+#include "libprojection/datum/helmerttransform.h"
 #include <cmath>
 
 namespace libprojection {

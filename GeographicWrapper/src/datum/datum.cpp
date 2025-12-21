@@ -1,4 +1,4 @@
-#include "libprojection/datum/Datum.h"
+#include "libprojection/datum/datum.h"
 
 namespace libprojection {
 
