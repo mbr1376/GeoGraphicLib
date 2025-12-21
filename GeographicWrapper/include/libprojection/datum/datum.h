@@ -1,23 +1,22 @@
 #pragma once
-#include <string>
 #include "ellipsoid.h"
+#include "helmert.h"
 
 namespace libprojection {
 
 class Datum {
 public:
-    Datum(const std::string& name, const Ellipsoid& ellipsoid);
-
-    const std::string& name() const;
-    const Ellipsoid& ellipsoid() const;
-
-    // Common datums
     static Datum WGS84();
-    static Datum NAD83();
+    static Datum ED50();   // مثال
+
+    const Ellipsoid& ellipsoid() const;
+    const Helmert& toWGS84() const;
 
 private:
-    std::string name_;
+    Datum(Ellipsoid e, Helmert h);
+
     Ellipsoid ellipsoid_;
+    Helmert toWGS84_;
 };
 
 } // namespace libprojection
