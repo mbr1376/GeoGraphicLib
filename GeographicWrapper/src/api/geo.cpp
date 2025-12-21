@@ -10,6 +10,7 @@
 #include <GeographicLib/Math.hpp>
 #include "libprojection/projection/utmprojection.h"
 #include "libprojection/datum/datum.h"
+#include "libprojection/transform/transformer.h"
 
 using namespace GeographicLib;
 
@@ -197,6 +198,19 @@ double Geo::NormalizeAzimuth(double azi) {
         lon = g.lon;
     }
 
+
+    void Geo::TransformEPSG(int srcEpsg, int dstEpsg,
+                            double x, double y,
+                            double& ox, double& oy) {
+        libprojection::CRS src = libprojection::CRS::FromEPSG(srcEpsg);
+        libprojection::CRS dst = libprojection::CRS::FromEPSG(dstEpsg);
+
+        libprojection::Transformer t(src, dst);
+        ProjectedPoint p = t.Transform({x, y});
+
+        ox = p.x;
+        oy = p.y;
+    }
 
 
 } // namespace libprojection

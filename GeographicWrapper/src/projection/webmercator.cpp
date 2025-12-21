@@ -1,4 +1,6 @@
 #include "libprojection/projection/webmercator.h"
+#include "libprojection/core/type.h"
+#include "libprojection/datum/ellipsoid.h"
 #include <cmath>
 #include <algorithm>
 

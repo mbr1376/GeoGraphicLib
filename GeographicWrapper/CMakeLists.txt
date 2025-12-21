@@ -21,6 +21,10 @@ add_library(GeoWrapper SHARED
             src/projection/transversemercator.cpp
             src/projection/utmprojection.cpp
             src/projection/projectionfacade.cpp
+            src/projection/webmercator.cpp
+            src/crs/crs.cpp
+            src/transform/transformer.cpp
+            src/datum/helmerttransform.cpp
             )
 # for ubuntu
 target_link_libraries(GeoWrapper PUBLIC GeographicLib)

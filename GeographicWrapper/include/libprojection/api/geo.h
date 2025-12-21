@@ -87,5 +87,8 @@ public:
 
     static void WebMercatorToLatLon(double x, double y,
                                     double& lat, double& lon);
+    static void  TransformEPSG(int srcEpsg, int dstEpsg,
+                              double x, double y,
+                              double& ox, double& oy);
 };
 }
