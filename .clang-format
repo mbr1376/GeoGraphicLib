@@ -1,0 +1,17 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+AllowShortFunctionsOnASingleLine: Empty
+DerivePointerAlignment: false
+PointerAlignment: Left
+BreakBeforeBraces: Allman
+SortIncludes: false
+SpacesInParentheses: false
+SpaceBeforeParens: ControlStatements
+ReflowComments: true
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
