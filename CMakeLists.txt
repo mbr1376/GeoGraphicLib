@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.16)
 option(COPY_SHARED_LIBS "Copy built shared libraries (*.so) to ${CMAKE_BINARY_DIR}/lib after build" ON)
 option(CREATE_LIB_PYTHON "Create lib for  python" ON)
+option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis during build" OFF)
+
+find_program(CLANG_TIDY_EXE NAMES clang-tidy clang-tidy-18 clang-tidy-17 clang-tidy-16 clang-tidy-15 clang-tidy-14)
+if(ENABLE_CLANG_TIDY)
+    if(CLANG_TIDY_EXE)
+        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+        message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE}")
+    else()
+        message(WARNING "ENABLE_CLANG_TIDY is ON but clang-tidy was not found on PATH")
+    endif()
+endif()
 
 if(COPY_SHARED_LIBS)
 	set(SHARED_LIB_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
